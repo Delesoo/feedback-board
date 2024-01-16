@@ -45,7 +45,7 @@ export default function Home() {
         <FeedbackFormPopup setShow={setShowFeedbackPopupForm} />
       )}
       {showFeedbackPopupItem && (
-        <FeedbackItemPopup {...showFeedbackPopupItem} setShow={setShowFeedbackPopupItemxc} />
+        <FeedbackItemPopup {...showFeedbackPopupItem} setShow={setShowFeedbackPopupItem} />
       )}
     </main>
   );

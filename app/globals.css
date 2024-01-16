@@ -14,3 +14,6 @@ body{
      border-color: transparent transparent #888 transparent;
      transform: rotate(0deg);
 }
+.text-white > .triangle-vote-up{
+    border-color: transparent transparent #FFF transparent;
+}

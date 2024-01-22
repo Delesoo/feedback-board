@@ -2,10 +2,12 @@ import { useState } from "react";
 import Button from "./Button";
 import Popup from "./Popup";
 import axios from "axios";
+import Paperclip from "./icons/Paperclip";
 
 export default function FeedbackFormPopup({setShow}) {
   const [title,setTitle] = useState('');
   const [description,setDescription] = useState('');
+  const [uploads, setUploads] = useState([]);
   function handleCreatePostButtonClick(ev) {
     ev.preventDefault();
     axios.post('/api/feedback', {title, description})
@@ -20,7 +22,9 @@ export default function FeedbackFormPopup({setShow}) {
       data.append('file', file);
     }
     const res = await axios.post('/api/upload', data);
-    console.log(res);
+    setUploads((existingUpload) => {
+      return [...existingUpload, ...res.data]
+    });
   }
     return (
         <Popup setShow={setShow} title={'Make a suggestion'}>
@@ -38,8 +42,28 @@ export default function FeedbackFormPopup({setShow}) {
                       onChange={ev => setDescription(ev.target.value)}
                       value={description}
                       />
+              {uploads?.length > 0 && (
+                <div>
+                <label className="block mt-2 mb-1 text-slate-700">Attachments</label>
+                  <div className="flex gap-2">
+                {uploads.map(link => (
+                  <a href={link} target="_blank" className="h-16">
+                    {/.(jpg|png)$/.test(link) ? (
+                      <img className="h-16 w-auto rounded-md" src={link} alt=""></img>
+                    ) : (
+                      <div className="bg-gray-200 h-16 p-2 flex items-center rounded-md">
+                        <Paperclip className="w-4 h-4" />
+                        {link.split('/')[3].substring(13)}
+                      </div>
+                    )}
+                  </a>
+                ))}
+              </div>
+                </div>
+              
+              )}
+
               <div className="flex gap-2 mt-2 justify-end">
-                <Button>Attach files</Button>
                 <label className="py-2 px-4 text-gray-600 cursor-pointer">
                   <span>Attach files</span>
                   <input multiple onChange={handleAttachFilesInputChange} type="file" className="hidden"></input>

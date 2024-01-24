@@ -13,7 +13,7 @@ export default function FeedbackFormPopup({setShow}) {
   const [isUploading, setIsUploading] = useState(false);
   function handleCreatePostButtonClick(ev) {
     ev.preventDefault();
-    axios.post('/api/feedback', {title, description})
+    axios.post('/api/feedback', {title, description, uploads})
     .then(() => {
     setShow(false);  
   });

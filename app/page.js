@@ -1,29 +1,26 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FeedbackItem from "./components/FeedbackItem";
 import FeedbackFormPopup from "./components/FeedbackFormPopup";
 import Button from "./components/Button";
 import FeedbackItemPopup from "./components/FeedbackItemPopup";
+import axios from "axios";
 
 export default function Home() {
   const [showFeedbackPopupForm,setShowFeedbackPopupForm] = useState(false);
   const [showFeedbackPopupItem,setShowFeedbackPopupItem] = useState (null);
+  const [feedbacks, setFeedbacks] = useState([]);
+  useEffect(() => {
+    axios.get('/api/feedback').then(res => {
+      setFeedbacks(res.data);
+    })
+  }, []);
   function openFeedbackPopupForm() {
     setShowFeedbackPopupForm(true);
   }
   function openFeedbackPopupItem(feedback) {
     setShowFeedbackPopupItem(feedback);
   }
-  const feedbacks = [
-    {title: 'Please post more videos', 
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras finibus mollis justo, ac placerat lorem bibendum ac. Sed dignissim nunc eu consectetur ornare. Curabitur vestibulum',
-    votesCount:80
-    },
-    {title: 'Please post more videos 2', 
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras finibus mollis justo, ac placerat lorem bibendum ac. Sed dignissim nunc eu consectetur ornare. Curabitur vestibulum 2',
-    votesCount:63
-    },
-  ];
   return (
     <main className="bg-white md:max-w-2xl mx-auto md:shadow-lg md:rounded-lg md:mt-8 overflow-hidden">
       <div className="bg-gradient-to-r from-red-400 to bg-orange-200 p-8">

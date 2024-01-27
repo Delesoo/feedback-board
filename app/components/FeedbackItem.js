@@ -1,14 +1,25 @@
+'use client';
 import { useState } from "react";
 import Popup from "./Popup";
+import Button from "./Button";
+import {signIn} from 'next-auth/react';
 
-export default function FeedbackItem({onOpen,title,description,votesCount}) {
+export default function FeedbackItem({onOpen, _id, title,description,votesCount}) {
     const [showLoginPopup, setShowLoginPopup] = useState(false);
+    const isLoggedIn = false;
     function handleVoteButtonClick(ev){
       ev.stopPropagation();
       ev.preventDefault();
-      setShowLoginPopup(true);
+      if (!isLoggedIn) {
+        localStorage.setItem('vote_after_login', _id );
+        setShowLoginPopup(true);
+      }
     }
-    const isLoggedIn = false;
+    async function handleGoogleLoginButtonClick(ev) {
+      ev.stopPropagation();
+      ev.preventDefault();    
+      await signIn('google');
+    }
     return (
         <a  href="" 
             onClick={e => {e.preventDefault();onOpen();}} 
@@ -21,7 +32,7 @@ export default function FeedbackItem({onOpen,title,description,votesCount}) {
           {showLoginPopup && (
             <Popup title={'Confirm your vote!'} narrow setShow={setShowLoginPopup}> 
               <div className="p-4">
-                login button 
+                <Button primary onClick={handleGoogleLoginButtonClick}>login with google</Button> 
               </div>
             </Popup>
           )}

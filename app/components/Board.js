@@ -16,11 +16,12 @@ export default function Board() {
         setFeedbacks(res.data);
       })
     }, []);
-    useEffect(() => {
+     useEffect(() => {
       if (session?.user?.email) {
         const feedbackId = localStorage.getItem('vote_after_login');
         if (feedbackId) {
           alert(feedbackId);
+          axios.post('/api/vote', {feedbackId});
         }
       }
     }, [session?.user?.email])

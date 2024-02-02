@@ -2,17 +2,27 @@
 import { useState } from "react";
 import Popup from "./Popup";
 import Button from "./Button";
-import {signIn} from 'next-auth/react';
+import {signIn, useSession} from 'next-auth/react';
+import axios from "axios";
+import { MoonLoader } from "react-spinners";
 
-export default function FeedbackItem({onOpen, _id, title,description,votesCount}) {
+export default function FeedbackItem({onOpen, _id, title, description, votes, onVotesChange, parentLoadingVotes=true}) {
     const [showLoginPopup, setShowLoginPopup] = useState(false);
-    const isLoggedIn = false;
+    const [isVotesLoading, setIsVotesLoading] = useState(false);
+    const {data:session} = useSession();
+    const isLoggedIn = !!session?.user?.email;
     function handleVoteButtonClick(ev){
       ev.stopPropagation();
       ev.preventDefault();
       if (!isLoggedIn) {
         localStorage.setItem('vote_after_login', _id );
         setShowLoginPopup(true);
+      } else {
+        setIsVotesLoading(true);
+        axios.post('/api/vote', {feedbackId: _id,}).then(async () => {
+          await onVotesChange();
+          setIsVotesLoading(false);
+        });
       }
     }
     async function handleGoogleLoginButtonClick(ev) {
@@ -36,10 +46,17 @@ export default function FeedbackItem({onOpen, _id, title,description,votesCount}
               </div>
             </Popup>
           )}
-          <button onClick={handleVoteButtonClick} className="shadow-sm shadow-gray-200 border rounded-md py-1 px-2 flex items-center gap-1 text-gray-600">
-            <span className="triangle-vote-up"></span>
-            {votesCount || '0'}
-          </button>
+             <button onClick={handleVoteButtonClick} className="shadow-sm shadow-gray-200 border rounded-md py-1 px-2 flex items-center gap-1 text-gray-600">
+             {!isVotesLoading && (
+               <>
+               <span className="triangle-vote-up"></span>
+               {votes?.length || '0'}
+               </>
+             )}
+             {isVotesLoading && (
+               <MoonLoader size={18} />
+             )}
+            </button>
         </div>
       </a>
     );

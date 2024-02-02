@@ -10,21 +10,35 @@ export default function Board() {
     const [showFeedbackPopupForm,setShowFeedbackPopupForm] = useState(false);
     const [showFeedbackPopupItem,setShowFeedbackPopupItem] = useState (null);
     const [feedbacks, setFeedbacks] = useState([]);
+    const [votesLoading, setVotesLoading] = useState(false);
+    const [votes, setVotes] = useState([]);
     const {data:session} = useSession();
     useEffect(() => { 
       axios.get('/api/feedback').then(res => {
         setFeedbacks(res.data);
-      })
+      });
     }, []);
+
+    useEffect(() => {
+      fetchVotes();
+    }, [feedbacks])
+
      useEffect(() => {
       if (session?.user?.email) {
         const feedbackId = localStorage.getItem('vote_after_login');
         if (feedbackId) {
-          alert(feedbackId);
           axios.post('/api/vote', {feedbackId});
+          localStorage.removeItem('vote_after_login')
         }
       }
     }, [session?.user?.email])
+    async function fetchVotes() {
+      setVotesLoading(true);
+      const ids = feedbacks.map(f => f._id)
+      const res = await axios.get('/api/vote?feedbackIds='+ids.join(','));
+      setVotes(res.data);
+      setVotesLoading(false);
+    }
     function openFeedbackPopupForm() {
       setShowFeedbackPopupForm(true);
     }
@@ -46,14 +60,21 @@ export default function Board() {
       </div>
       <div className="px-8">
         {feedbacks.map(feedback => (
-          <FeedbackItem {...feedback} onOpen={() => openFeedbackPopupItem(feedback)} />
+          <FeedbackItem {...feedback} 
+                        onVotesChange={fetchVotes} 
+                        votes={votes.filter(v => v.feedbackId.toString() === feedback._id.toString())}
+                        parentLoadingVotes={votesLoading} 
+                        onOpen={() => openFeedbackPopupItem(feedback)} />
         ))}
       </div>
       {showFeedbackPopupForm && (
         <FeedbackFormPopup setShow={setShowFeedbackPopupForm} />
       )}
       {showFeedbackPopupItem && (
-        <FeedbackItemPopup {...showFeedbackPopupItem} setShow={setShowFeedbackPopupItem} />
+        <FeedbackItemPopup {...showFeedbackPopupItem} 
+                          votes={votes.filter(v => v.feedbackId.toString() === showFeedbackPopupItem._id)} 
+                          onVotesChange={fetchVotes}
+                          setShow={setShowFeedbackPopupItem} />
       )}
     </main>
     );

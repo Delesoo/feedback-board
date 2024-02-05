@@ -30,6 +30,7 @@ export default function FeedbackItem({onOpen, _id, title, description, votes, on
       ev.preventDefault();    
       await signIn('google');
     }
+    const iVoted = !!votes.find(v => v.userEmail === session?.user?.email);
     return (
         <a  href="" 
             onClick={e => {e.preventDefault();onOpen();}} 
@@ -46,7 +47,7 @@ export default function FeedbackItem({onOpen, _id, title, description, votes, on
               </div>
             </Popup>
           )}
-             <button onClick={handleVoteButtonClick} className="shadow-sm shadow-gray-200 border rounded-md py-1 px-2 flex items-center gap-1 text-gray-600">
+             <Button primary={iVoted} onClick={handleVoteButtonClick} className="shadow-sm border">
              {!isVotesLoading && (
                <>
                <span className="triangle-vote-up"></span>
@@ -56,7 +57,7 @@ export default function FeedbackItem({onOpen, _id, title, description, votes, on
              {isVotesLoading && (
                <MoonLoader size={18} />
              )}
-            </button>
+            </Button>
         </div>
       </a>
     );

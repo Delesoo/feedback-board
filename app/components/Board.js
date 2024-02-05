@@ -27,8 +27,10 @@ export default function Board() {
       if (session?.user?.email) {
         const feedbackId = localStorage.getItem('vote_after_login');
         if (feedbackId) {
-          axios.post('/api/vote', {feedbackId});
-          localStorage.removeItem('vote_after_login')
+          axios.post('/api/vote', {feedbackId}).then(() => {
+            localStorage.removeItem('vote_after_login')
+            fetchVotes();
+          });
         }
       }
     }, [session?.user?.email])

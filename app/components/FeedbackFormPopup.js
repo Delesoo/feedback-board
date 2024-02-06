@@ -5,8 +5,9 @@ import axios from "axios";
 import Paperclip from "./icons/Paperclip";
 import Trash from "./icons/Trash";
 import {MoonLoader} from 'react-spinners';
+import Attachment from "./Attachment";
 
-export default function FeedbackFormPopup({setShow}) {
+export default function FeedbackFormPopup({setShow, onCreate}) {
   const [title,setTitle] = useState('');
   const [description,setDescription] = useState('');
   const [uploads, setUploads] = useState([]);
@@ -15,7 +16,8 @@ export default function FeedbackFormPopup({setShow}) {
     ev.preventDefault();
     axios.post('/api/feedback', {title, description, uploads})
     .then(() => {
-    setShow(false);  
+    setShow(false); 
+      onCreate();
   });
   }
   async function handleAttachFilesInputChange(ev) {
@@ -58,23 +60,13 @@ export default function FeedbackFormPopup({setShow}) {
                 <label className="block mt-2 mb-1 text-slate-700">Attachments</label>
                   <div className="flex gap-3">
                 {uploads.map(link => (
-                  <a href={link} target="_blank" className="h-16 relative">
-                    <button onClick={ev => handleRemoveFileButtonClick(ev,link)} className="-right-2 -top-2 absolute bg-red-300 p-1 rounded-md">
-                      <Trash />
-                    </button>
-                    {/.(jpg|png)$/.test(link) ? (
-                      <img className="h-16 w-auto rounded-md" src={link} alt=""></img>
-                    ) : (
-                      <div className="bg-gray-200 h-16 p-2 flex items-center rounded-md">
-                        <Paperclip className="w-4 h-4" />
-                        {link.split('/')[3].substring(13)}
-                      </div>
-                    )}
-                  </a>
+                  <Attachment link={link}
+                              showRemoveButton={true} 
+                              handleRemoveFileButtonClick={(ev, link) => 
+                              handleRemoveFileButtonClick(ev, link)} />
                 ))}
               </div>
                 </div>
-              
               )}
 
               <div className="flex gap-2 mt-2 justify-end">

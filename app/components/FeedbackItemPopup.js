@@ -6,8 +6,9 @@ import axios from "axios";
 import { MoonLoader } from "react-spinners";
 import { useSession } from "next-auth/react";
 import Tick from "./icons/Tick";
+import Attachment from "./Attachment";
 
-export default function FeedbackItemPopup({_id, title, description, setShow, votes, onVotesChange}) {
+export default function FeedbackItemPopup({_id, title, description, setShow, votes, onVotesChange, uploads}) {
     const [isVotesLoading, setIsVotesLoading] = useState(false);
     const {data:session} = useSession();
     function handleVoteButtonClick() {
@@ -25,6 +26,17 @@ export default function FeedbackItemPopup({_id, title, description, setShow, vot
                 <p className="text-gray-600">
                     {description}
                 </p>
+                {uploads?.length > 0 && (
+                    <div className="mt-4">
+                        <span className="text-sm text-gray-500">Attachments:</span>
+                        <div className="flex gap-2">
+                            {uploads.map(link => (
+                                <Attachment link={link} />
+                            ))}
+                        </div>
+                    </div>
+
+                )}
             </div>
             <div className="flex justify-end px-4 py-2 border-b">
                 <Button primary onClick={handleVoteButtonClick}>

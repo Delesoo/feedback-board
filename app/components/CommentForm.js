@@ -4,7 +4,7 @@ import Button from "./Button";
 import { useState } from "react";
 import axios from "axios";
 
-export default function CommentForm({feedbackId}) {
+export default function CommentForm({feedbackId, OnPost}) {
     const [commentText, setCommentText] = useState('');
     const [uploads, setUploads] = useState([]);
     function addUploads(newLinks) {
@@ -24,6 +24,7 @@ export default function CommentForm({feedbackId}) {
         });
         setCommentText('');
         setUploads([]);
+        onPost();
     }
     return (
         <form>
@@ -35,7 +36,7 @@ export default function CommentForm({feedbackId}) {
         />
         {uploads?.length > 0 && (
             <div className="">
-                <div className="text-sm text-gray-600 mt-2 mt-3">Files</div>
+                <div className="text-sm text-gray-600 mt-2">Files</div>
                 <div className="flex gap-3">
                     {uploads.map(link => (
                         <div>

@@ -20,8 +20,14 @@ export async function GET(req) {
     mongoose.connect(process.env.MONGO_URL);
     const url = new URL(req.url);
     if (url.searchParams.get('feedbackId')) {
+        const result = await Comment
+            .find({feedbackId:url.searchParams.get('feedbackId')})
+            .populate('user');
         return Response.json(
-            await Comment.find({feedbackId:url.searchParams.get('feedbackId')})
+            result.map(doc => {
+                const {userEmail, ...commentWithoutEmail} = doc.toJSON();
+                return commentWithoutEmail;
+            })
         );
     }
     return Response.json(false);

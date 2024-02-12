@@ -26,6 +26,8 @@ export async function GET(req) {
         return Response.json(
             result.map(doc => {
                 const {userEmail, ...commentWithoutEmail} = doc.toJSON();
+                const {email, ...userWithoutEmail} = commentWithoutEmail.user;
+                commentWithoutEmail.user = userWithoutEmail;
                 return commentWithoutEmail;
             })
         );

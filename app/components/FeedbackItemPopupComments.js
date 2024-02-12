@@ -21,11 +21,11 @@ export default function FeedbackItemPopupComments({feedbackId}) {
             {comments?.length > 0 && comments.map(comment => (
                 <div className="mb-8">
                     <div className="flex gap-4">
-                    <Avatar />
+                    <Avatar url={comment.user.image} />
                         <div>
                             <p className="text-gray-600">{comment.text}</p>
                             <div className="text-gray-400 mt-2 text-sm">
-                                Anonymous &middot; <TimeAgo
+                                {comment.user.name} &middot; <TimeAgo
                                 datetime={comment.createdAt}
                                 locale='en_US'
                             />

@@ -1,4 +1,5 @@
-const { Schema, default: mongoose, models, model } = require("mongoose");
+import mongoose, {model, models, Schema} from "mongoose";
+import { User } from '@/app/models/User';
 
 const commentSchema = new Schema({
     text: {type: String},

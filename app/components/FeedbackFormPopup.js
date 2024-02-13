@@ -7,7 +7,7 @@ import Trash from "./icons/Trash";
 import {MoonLoader} from 'react-spinners';
 import Attachment from "./Attachment";
 import AttachFilesButton from "./AttachFilesButton";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 export default function FeedbackFormPopup({setShow, onCreate}) {
   const [title,setTitle] = useState('');

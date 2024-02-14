@@ -49,6 +49,7 @@ export default function FeedbackItemPopup({_id, title, description, setShow, vot
             description: newDescription,
             uploads: newUploads,
         }).then(() => {
+            setIsEditMode(false);
             onUpdate({
                 id: _id,
                 title: newTitle,

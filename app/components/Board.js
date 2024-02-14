@@ -69,10 +69,11 @@ export default function Board() {
     function openFeedbackPopupItem(feedback) {
       setShowFeedbackPopupItem(feedback);
     }
-    function handleFeedbackUpdate(newData) {
+    async function handleFeedbackUpdate(newData) {
       setShowFeedbackPopupItem(prevData => {
         return {...prevData, ...newData};
       });
+      await fetchFeedbacks();
     }
     return (
         <main className="bg-white md:max-w-2xl mx-auto md:shadow-lg md:rounded-lg md:mt-8 overflow-hidden">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FeedbackItem from "@/app/components/FeedbackItem";
 import FeedbackFormPopup from "@/app/components/FeedbackFormPopup";
 import Button from "@/app/components/Button";
@@ -12,6 +12,8 @@ export default function Board() {
     const [feedbacks, setFeedbacks] = useState([]);
     const [votesLoading, setVotesLoading] = useState(false);
     const [votes, setVotes] = useState([]);
+    const sortRef = useRef('votes');
+    const lastId = useRef('');
     const [sort, setSort] = useState('votes');
     const {data:session} = useSession();
     useEffect(() => { 
@@ -54,9 +56,37 @@ export default function Board() {
         }
       }
     }, [session?.user?.email])
-    async function fetchFeedbacks() {
-      axios.get('/api/feedback?sort='+sort).then(res => {
-        setFeedbacks(res.data);
+    function handleScroll() {
+      const html = window.document.querySelector('html');
+      const howMuchScrolled = html.scrollTop;
+      const howMuchIsToScroll = html.scrollHeight;
+      const leftToScroll = howMuchIsToScroll - howMuchScrolled - html.clientHeight;
+      if (leftToScroll <= 100) {
+        fetchFeedbacks(true);
+      }
+    }
+    function registerScrollListener() {
+      window.addEventListener('scroll', handleScroll);
+    }
+    function unregisterScrollListener() {
+      window.removeEventListener('scroll', handleScroll);
+    }
+    useEffect(() => {
+      registerScrollListener();
+      return () => {unregisterScrollListener();}
+    }, [])
+    useEffect(() => {
+      lastId.current='';
+      sortRef.current = sort;
+    }, [sort]); 
+    async function fetchFeedbacks(append=false) {
+      axios.get(`/api/feedback?sort=${sort}&lastId=${lastId.current}`).then(res => {
+        if (append) {
+          setFeedbacks(currentFeedbacks => [...currentFeedbacks, ...res.data]);
+        } else {
+          setFeedbacks(res.data);
+        }
+        lastId.current = res.data[res.data.length-1]._id;
       });
     }
     async function fetchVotes() {
@@ -90,7 +120,7 @@ export default function Board() {
           <span className="text-gray-400 text-sm">Sort by: </span>
         <select
           value={sort}
-          onChange={ev => setSort(ev.target.value)} 
+          onChange={ev => {setSort(ev.target.value);}} 
           className="bg-transparent py-2 text-gray-600">
             <option value='votes'>Most Voted</option>
             <option value='latest'>Latest</option>

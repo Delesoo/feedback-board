@@ -42,7 +42,8 @@ export async function GET(req) {
          await Feedback.findById(url.searchParams.get('id'))
       );
    } else {
-      const sortParam = url.searchParams.get('sort') 
+      const sortParam = url.searchParams.get('sort'); 
+      const lastId = url.searchParams.get('lastId');
       let sortDef; 
       if (sortParam === 'latest') {
          sortDef = {createdAt: -1};
@@ -54,7 +55,11 @@ export async function GET(req) {
          sortDef = {votesCountCached: -1};
       }
 
+      const filter = lastId ? {_id:{$gt:lastId}} : null;
       return Response.json(
-         await Feedback.find(null,null,{sort: sortDef}).populate('user'));
+         await Feedback.find(filter,null,{
+            sort: sortDef,
+            limit: 10,
+         }).populate('user'));
    }
 }

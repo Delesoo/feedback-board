@@ -5,15 +5,19 @@ import Button from "@/app/components/Button";
 import FeedbackItemPopup from "@/app/components/FeedbackItemPopup";
 import axios from "axios";
 import { SessionProvider, useSession } from "next-auth/react";
+import { MoonLoader } from "react-spinners";
 
 export default function Board() {
     const [showFeedbackPopupForm,setShowFeedbackPopupForm] = useState(false);
     const [showFeedbackPopupItem,setShowFeedbackPopupItem] = useState (null);
     const [feedbacks, setFeedbacks] = useState([]);
+    const fetchingFeedbacksRef = useRef(false);
+    const [fetchingFeedbacks, setFetchingFeedbacks] = useState(false);
     const [votesLoading, setVotesLoading] = useState(false);
     const [votes, setVotes] = useState([]);
     const sortRef = useRef('votes');
-    const lastId = useRef('');
+    const loadedRows = useRef(0);
+    const everythingLoadedRef = useRef(false);
     const [sort, setSort] = useState('votes');
     const {data:session} = useSession();
     useEffect(() => { 
@@ -24,6 +28,9 @@ export default function Board() {
       fetchVotes();
     }, [feedbacks])
     useEffect(() => {
+      loadedRows.current=0;
+      sortRef.current = sort;
+      everythingLoadedRef.current = false;
       fetchFeedbacks();
     }, [sort]);
      useEffect(() => {
@@ -75,18 +82,26 @@ export default function Board() {
       registerScrollListener();
       return () => {unregisterScrollListener();}
     }, [])
-    useEffect(() => {
-      lastId.current='';
-      sortRef.current = sort;
-    }, [sort]); 
+
     async function fetchFeedbacks(append=false) {
-      axios.get(`/api/feedback?sort=${sort}&lastId=${lastId.current}`).then(res => {
+      if (fetchingFeedbacks.current) return;
+      if (everythingLoadedRef.current) return;
+      fetchingFeedbacksRef.current = true;
+      setFetchingFeedbacks(true);
+      axios.get(`/api/feedback?sort=${sortRef.current}&loadedRows=${loadedRows.current}`).then(res => {
         if (append) {
           setFeedbacks(currentFeedbacks => [...currentFeedbacks, ...res.data]);
         } else {
           setFeedbacks(res.data);
         }
-        lastId.current = res.data[res.data.length-1]._id;
+        if (res.data?.length > 0) {
+          loadedRows.current += res.data.length;
+        }
+        if (res.data?.length === 0) {
+          everythingLoadedRef.current = true;
+        }
+        fetchingFeedbacksRef.current = false;
+        setFetchingFeedbacks(false);
       });
     }
     async function fetchVotes() {
@@ -109,7 +124,7 @@ export default function Board() {
       await fetchFeedbacks();
     }
     return (
-        <main className="bg-white md:max-w-2xl mx-auto md:shadow-lg md:rounded-lg md:mt-8 overflow-hidden">
+        <main className="bg-white md:max-w-2xl mx-auto md:shadow-lg md:rounded-lg md:mt-8 md:mb-8 overflow-hidden">
 
       <div className="bg-gradient-to-r from-red-400 to bg-orange-200 p-8">
         <h1 className="font-bold text-xl">Coding with Tornike</h1>
@@ -139,6 +154,11 @@ export default function Board() {
                         parentLoadingVotes={votesLoading} 
                         onOpen={() => openFeedbackPopupItem(feedback)} />
         ))}
+        {fetchingFeedbacks && (
+          <div className="p-4">
+            <MoonLoader size={24} />
+          </div>
+        )}
       </div>
       {showFeedbackPopupForm && (
         <FeedbackFormPopup onCreate={fetchFeedbacks} setShow={setShowFeedbackPopupForm} />

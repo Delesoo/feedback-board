@@ -44,6 +44,7 @@ export async function GET(req) {
    } else {
       const sortParam = url.searchParams.get('sort'); 
       const loadedRows = url.searchParams.get('loadedRows');
+      const searchPhrase = url.searchParams.get('search');
       let sortDef; 
       if (sortParam === 'latest') {
          sortDef = {createdAt: -1};
@@ -55,8 +56,18 @@ export async function GET(req) {
          sortDef = {votesCountCached: -1};
       }
 
+      let filter = null;
+      if (searchPhrase) {
+         filter = {
+            $or:[
+               {title:{$regex:'.*'+searchPhrase+'.*'}},
+               {description:{$regex:'.*'+searchPhrase+'.*'}},
+            ] 
+         };
+      }
+
       return Response.json(
-         await Feedback.find(null,null,{
+         await Feedback.find(filter,null,{
             sort: sortDef,
             skip: loadedRows,
             limit: 10,

@@ -6,6 +6,8 @@ import FeedbackItemPopup from "@/app/components/FeedbackItemPopup";
 import axios from "axios";
 import { SessionProvider, useSession } from "next-auth/react";
 import { MoonLoader } from "react-spinners";
+import Search from "./icons/Search";
+import { debounce } from "lodash";
 
 export default function Board() {
     const [showFeedbackPopupForm,setShowFeedbackPopupForm] = useState(false);
@@ -13,12 +15,17 @@ export default function Board() {
     const [feedbacks, setFeedbacks] = useState([]);
     const fetchingFeedbacksRef = useRef(false);
     const [fetchingFeedbacks, setFetchingFeedbacks] = useState(false);
+    const waitingRef = useRef(false);
+    const [waiting, setWaiting] = useState(false);
     const [votesLoading, setVotesLoading] = useState(false);
     const [votes, setVotes] = useState([]);
     const sortRef = useRef('votes');
     const loadedRows = useRef(0);
     const everythingLoadedRef = useRef(false);
     const [sort, setSort] = useState('votes');
+    const [searchPhrase, setSearchPhrase] = useState('');
+    const searchPhraseRef = useRef('');
+    const debouncedFetchFeedbacksRef = useRef(fetchFeedbacks, 300);
     const {data:session} = useSession();
     useEffect(() => { 
       fetchFeedbacks();
@@ -30,9 +37,15 @@ export default function Board() {
     useEffect(() => {
       loadedRows.current=0;
       sortRef.current = sort;
+      searchPhraseRef.current = searchPhrase;
       everythingLoadedRef.current = false;
-      fetchFeedbacks();
-    }, [sort]);
+      if (feedbacks?.length > 0) {
+        setFeedbacks([]);
+      }
+      setWaiting(true);
+      waitingRef.current = true;
+      debouncedFetchFeedbacksRef.current();
+    }, [sort, searchPhrase]);
      useEffect(() => {
       if (session?.user?.email) {
         const feedbackToVote = localStorage.getItem('vote_after_login');
@@ -88,7 +101,7 @@ export default function Board() {
       if (everythingLoadedRef.current) return;
       fetchingFeedbacksRef.current = true;
       setFetchingFeedbacks(true);
-      axios.get(`/api/feedback?sort=${sortRef.current}&loadedRows=${loadedRows.current}`).then(res => {
+      axios.get(`/api/feedback?sort=${sortRef.current}&loadedRows=${loadedRows.current}&search=${searchPhraseRef.current}`).then(res => {
         if (append) {
           setFeedbacks(currentFeedbacks => [...currentFeedbacks, ...res.data]);
         } else {
@@ -102,6 +115,8 @@ export default function Board() {
         }
         fetchingFeedbacksRef.current = false;
         setFetchingFeedbacks(false);
+        waitingRef.current = false;
+        setWaiting(false);
       });
     }
     async function fetchVotes() {
@@ -130,17 +145,25 @@ export default function Board() {
         <h1 className="font-bold text-xl">Coding with Tornike</h1>
         <p className="text-opacity-90 text-slate-700">Help me decide what should I build for the next project</p>
       </div>
-      <div className="bg-gray-100 px-8 py-4 flex border-b">
-        <div className="grow flex items-center">
-          <span className="text-gray-400 text-sm">Sort by: </span>
+      <div className="bg-gray-200 px-8 py-4 flex items-center border-b">
+        <div className="grow flex items-center gap-4 text-gray-500">
         <select
           value={sort}
           onChange={ev => {setSort(ev.target.value);}} 
-          className="bg-transparent py-2 text-gray-600">
+          className="bg-transparent py-2 ">
             <option value='votes'>Most Voted</option>
             <option value='latest'>Latest</option>
             <option value='oldest'>Oldest</option>
           </select>
+          <div className="relative">
+            <Search className="w-4 h-4 absolute top-3 left-2 pointer-events-none" />
+            <input  
+              type="text" 
+              placeholder="Search"
+              value={searchPhrase}
+              onChange={ev => setSearchPhrase(ev.target.value)} 
+              className="bg-transparent p-2 pl-7"/>
+          </div>
         </div>
         <div>
           <Button primary onClick={openFeedbackPopupForm}>Make a suggestion</Button>
@@ -154,7 +177,7 @@ export default function Board() {
                         parentLoadingVotes={votesLoading} 
                         onOpen={() => openFeedbackPopupItem(feedback)} />
         ))}
-        {fetchingFeedbacks && (
+        {(fetchingFeedbacks || waiting) && (
           <div className="p-4">
             <MoonLoader size={24} />
           </div>

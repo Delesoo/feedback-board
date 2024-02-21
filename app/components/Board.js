@@ -170,6 +170,11 @@ export default function Board() {
         </div>
       </div>
       <div className="px-8">
+        {feedbacks?.length === 0 && !fetchingFeedbacks && !waiting && (
+          <div className="py-8 text-4xl text-gray-200">
+            Nothing found
+          </div>
+        )}
         {feedbacks.map(feedback => (
           <FeedbackItem {...feedback} 
                         onVotesChange={fetchVotes} 

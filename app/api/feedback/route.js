@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import {Feedback} from "@/app/models/Feedback"
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
+import { Comment } from "@/app/models/Comment";
+import { comment } from "postcss";
 
 export async function POST(request) {
    const jsonBody = await request.json();
@@ -58,10 +60,13 @@ export async function GET(req) {
 
       let filter = null;
       if (searchPhrase) {
+         const comments = await Comment.find({text:{$regex:'.*'+searchPhrase+'.*'}},'feedbackId',{limit:20});
+         
          filter = {
             $or:[
                {title:{$regex:'.*'+searchPhrase+'.*'}},
                {description:{$regex:'.*'+searchPhrase+'.*'}},
+               {_id:comments.map(c => c.feedbackId)},
             ] 
          };
       }

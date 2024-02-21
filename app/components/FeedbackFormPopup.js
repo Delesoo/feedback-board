@@ -47,7 +47,7 @@ export default function FeedbackFormPopup({setShow, onCreate}) {
                 />
                 <label className="block mt-4 mb-1 text-slate-700">Details</label>
                 <textarea 
-                      className="w-full border p-2 rounded-md" 
+                      className="w-full border p-2 rounded-md h-36" 
                       placeholder="Please include any details"
                       onChange={ev => setDescription(ev.target.value)}
                       value={description}

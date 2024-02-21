@@ -79,8 +79,9 @@ export default function FeedbackItemPopup({_id, title, description, setShow, vot
                     />
                 )}
                 {!isEditMode && (
-                    <p className="text-gray-600">
-                        {description}
+                    <p 
+                        className="text-gray-600" 
+                        dangerouslySetInnerHTML={{__html:description.replace('/\n/gi', '<br />')}}>
                     </p>
                 )}
                 {uploads?.length > 0 && (
